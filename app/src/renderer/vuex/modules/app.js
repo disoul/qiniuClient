@@ -34,6 +34,13 @@ export default {
             privatedeadline: 3600//默认1小时
         },
         app_buckets: [],
+        upload: {
+          file: {
+            query: [],
+          },
+          limit: 4,
+          showPlane: false,
+        },
     },
     mutations: {
         [types.APP.setup_s_privatebucket](state, value) {
@@ -79,6 +86,25 @@ export default {
         [types.APP.app_setup_init](state, value) {
             state.setup = value;
         },
+        [types.APP.upload_append_file](state, { file, bucket, path }) {
+            if (state.upload.file[filepath]) return; 
+            state.upload.file[filepath] = {
+              file,
+              // idle pending pause error finish
+              status: 'idle',
+              percent: 0,
+              speed: 0,
+              bucket,
+              path,
+            };
+            state.upload.file.query.push(filepath);
+        },
+        [types.APP.upload_set_file](state, { field, value, filepath }) {
+            state.upload.file[filepath][field] = value;
+        },
+        [types.APP.upload_set_plane](state, value) {
+            state.upload.showPlane = value == undefined ? !state.upload.showPlane : value;
+        },
     },
     actions: {
         [types.APP.qiniu_key](context, json) {
@@ -120,6 +146,20 @@ export default {
                 }
             });
         },
+        [types.APP.upload_a_start_upload](context, index) {
+            const idleList = context.getters.upload_status_filelist('idle');
+            if (idleList.length <= 0) return;
+            const file = idleList[0];
+
+            const params = {}
+        },
+        [types.APP.upload_a_append_file](context, { file, bucket, path }) {
+            context.commit(types.APP.upload_append_file, { file, bucket, path });
+            const pendingLength = context.getters.upload_status_filelist('pending').length;
+            if (pendingLength < context.state.upload.limit) {
+                context.dispatch()
+            }
+        }
     },
     getters: {
         [types.APP.setup_deadline](state) {
@@ -151,6 +191,12 @@ export default {
         },
         [types.APP.app_buckets](state) {
             return state.app_buckets;
-        }
+        },
+        [types.APP.upload_status_filelist]: (state) => (status) => {
+            return state.upload.file.query.filter(path => {
+                const file = state.upload.file[path];
+                return file.status = status;
+            }).map(path => state.upload.file[path]);
+        },
     }
 };

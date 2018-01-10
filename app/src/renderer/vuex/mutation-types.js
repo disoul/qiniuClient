@@ -42,4 +42,11 @@ export const APP = {
 
     menu_state: 'menu_state',
     menu_a_state: 'menu_a_state',
+
+    upload_append_file: 'upload_append_file',
+    upload_set_plane: 'upload_set_plane',
+    upload_set_file: 'upload_set_file',
+    upload_a_append_file: 'upload_a_append_file',
+    upload_a_start_upload: 'upload_a_start_upload',
+    upload_status_filelist: 'upliad_status_filelist',
 };

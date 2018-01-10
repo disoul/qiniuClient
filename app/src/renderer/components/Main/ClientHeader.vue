@@ -4,6 +4,7 @@
         box-shadow: 0 1px 1px rgba(0, 0, 0, .1);
         display: flex;
         align-items: center;
+        height: 52px;
         padding-right: 15px;
         -webkit-app-region: drag;
 
@@ -16,6 +17,11 @@
             width: 165px;
             margin: 8px 0;
         }
+    }
+
+    .upload-btn {
+        margin-right: 10px;
+        margin-top: 5px;
     }
 
     .modal-input {
@@ -44,19 +50,13 @@
                    style="width:250px"></Input>
         </div>
 
-        <div @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
-            <i-button type="text" @click="actionBtn(0)" v-if="bucket.name">
-                <Tooltip content="文件上传(支持多选)" placement="bottom">
-                    <Icon type="ios-plus-outline" size="24"/>
-                </Tooltip>
-            </i-button>
-        </div>
-
-        <div @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
-            <i-button type="text" @click="actionBtn(1)" v-if="bucket.name">
-                <Tooltip content="通过url直接上传文件" placement="bottom">
-                    <Icon type="ios-cloud-upload-outline" size="24"/>
-                </Tooltip>
+        <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
+            <i-button type="text" @click="actionBtn(3)" v-if="bucket.name">
+                <Badge count="100" overflow-count="99">
+                    <Tooltip content="上传列表" placement="bottom">
+                        <Icon type="ios-cloud-upload-outline" size="32"/>
+                    </Tooltip>
+                </Badge>
             </i-button>
         </div>
 
@@ -81,17 +81,22 @@
                 文件名:{{uploadModal.prepend}}{{uploadModal.input ? uploadModal.input + '/' : ''}}{{_path | getfileNameByPath}}
             </div>
         </Modal>
+        <upload-plane v-show="showUpload"></upload-plane>
     </div>
 </template>
 <script>
     import {util, cloudStorage, Constants} from '../../service/index';
     import {mapGetters, mapActions} from 'vuex';
+    import UploadPlane from './UploadPlane.vue';
     import * as types from '../../vuex/mutation-types';
 
     let ipc;
 
     export default {
         name: 'ClientHeader',
+        components: {
+            UploadPlane,
+        },
         data() {
             return {
                 uploadModal: {
@@ -101,6 +106,7 @@
                     path: '',
                     fileName: '',
                 },
+                showUpload: false,
                 search: '',
                 filePaths: [],
                 messageFlag: false
@@ -208,6 +214,9 @@
                     case 2://搜索事件
                         this.$emit('on-search', this.currentDir, this.search, event);
                         break;
+                    case 3:
+                        this.$store.commit(types.APP.upload_set_plane);
+                        break;
                 }
             },
             initModal() {
@@ -220,6 +229,7 @@
             handleFile(paths) {
                 //多文件上传
                 this.filePaths = paths;
+                // TODO: batch action
 
                 this.uploadModal.type = 'upload';
                 this.uploadModal.isShow = true;
@@ -254,7 +264,7 @@
                     cloudStorage.upload(param, this.handleResult);
                 }
             },
-            handleResult(err, ret) {
+            handleResult(err, ret, index) {
 
                 if (!err) {
                     this.$Notice.success({
@@ -268,7 +278,7 @@
                     });
                 }
 
-                this.filePaths.shift();
+                this.filePaths.splice(index, 1);
                 if (this.filePaths.length > 0) {
                     this.uploadFile();
                 } else {

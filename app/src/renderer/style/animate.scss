@@ -15,32 +15,16 @@
 
 @keyframes _rotateIn {
   from {
-    -webkit-transform-origin: center;
-    transform-origin: center;
-    -webkit-transform: none;
-    transform: none;
   }
 
   to {
-    -webkit-transform-origin: center;
-    transform-origin: center;
-    -webkit-transform: rotate3d(0, 0, 1, -180deg);
-    transform: rotate3d(0, 0, 1, -180deg);
   }
 }
 
 @keyframes _rotateOut {
   from {
-    -webkit-transform-origin: center;
-    transform-origin: center;
-    -webkit-transform: rotate3d(0, 0, 1, -180deg);
-    transform: rotate3d(0, 0, 1, -180deg);
   }
 
   to {
-    -webkit-transform-origin: center;
-    transform-origin: center;
-    -webkit-transform: none;
-    transform: none;
   }
 }

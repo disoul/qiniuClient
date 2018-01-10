@@ -101,10 +101,11 @@
                 <router-view :bucketname="bucketname"></router-view>
             </i-col>
         </Row>
+        <upload-plane v-show="showUpload"></upload-plane>
     </div>
 </template>
 <script>
-    import {mapGetters, mapActions} from 'vuex'
+    import {mapGetters, mapActions, mapState} from 'vuex'
     import * as cloudStorage from '../service/cloudStorage'
     import * as types from '../vuex/mutation-types'
     import storage from 'electron-json-storage'
@@ -114,6 +115,8 @@
     import RightContent from './bucketPage.vue'
 
     import {Constants} from '../service/index'
+
+    import UploadPlane from '../components/Main/UploadPlane';
 
     export default {
         mixins: [mixin_base],
@@ -136,6 +139,9 @@
                 buckets: types.APP.app_buckets,
                 privatebucket: types.APP.setup_privatebucket,
             }),
+            ...mapState({
+                showUpload: state => state.app.upload.showPlane,
+            }),
             spanLeft() {
                 return this.menuState ? 5 : 2;
             },
@@ -143,7 +149,7 @@
                 return this.menuState ? 19 : 22;
             }
         },
-        components: {RightContent},
+        components: {RightContent, UploadPlane},
         created: function () {
             this.initKEY(() => {
                 this.getBuckets();
