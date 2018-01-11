@@ -2,7 +2,7 @@
  * Created by zhangweiwei on 2017/2/28.
  */
 import * as types from '../mutation-types';
-
+import { cloudStorage } from '../../service';
 import * as util from '../../util/util';
 
 const storage = require('electron-json-storage');
@@ -86,21 +86,31 @@ export default {
         [types.APP.app_setup_init](state, value) {
             state.setup = value;
         },
-        [types.APP.upload_append_file](state, { file, bucket, path }) {
-            if (state.upload.file[filepath]) return; 
-            state.upload.file[filepath] = {
-              file,
-              // idle pending pause error finish
-              status: 'idle',
-              percent: 0,
-              speed: 0,
-              bucket,
-              path,
+        [types.APP.upload_append_file](state, { key, bucket, path }) {
+            if (state.upload.file[path]) return; 
+            state.upload.file[path] = {
+                key,
+                // idle pending pause error finish
+                status: 'idle',
+                percent: 0,
+                speed: 0,
+                bucket,
+                path,
             };
-            state.upload.file.query.push(filepath);
+            state.upload.file.query.push(path);
         },
-        [types.APP.upload_set_file](state, { field, value, filepath }) {
-            state.upload.file[filepath][field] = value;
+        [types.APP.upload_set_file](state, payload) {
+            let args = [];
+            if (!Array.isArray(payload)) {
+                args = [payload];
+            } else {
+                args = payload;
+            }
+            console.log('args', args);
+            args.forEach(item => {
+                const { filepath, field, value } = item;
+                state.upload.file[filepath][field] = value;
+            });
         },
         [types.APP.upload_set_plane](state, value) {
             state.upload.showPlane = value == undefined ? !state.upload.showPlane : value;
@@ -146,19 +156,57 @@ export default {
                 }
             });
         },
-        [types.APP.upload_a_start_upload](context, index) {
-            const idleList = context.getters.upload_status_filelist('idle');
-            if (idleList.length <= 0) return;
-            const file = idleList[0];
-
-            const params = {}
-        },
-        [types.APP.upload_a_append_file](context, { file, bucket, path }) {
-            context.commit(types.APP.upload_append_file, { file, bucket, path });
+        [types.APP.upload_a_start_upload](context, path) {
             const pendingLength = context.getters.upload_status_filelist('pending').length;
-            if (pendingLength < context.state.upload.limit) {
-                context.dispatch()
+            const idleList = context.getters.upload_status_filelist('idle');
+            console.log('idleList', idleList);
+            if (pendingLength >= context.state.upload.limit || idleList.length <= 0) {
+                return;
             }
+            const file = path ? context.state.upload.file[path] : idleList[0];
+
+            const params = {
+                bucket: file.bucket,
+                key: file.key,
+                path: file.path,
+                progressCallback: (p) => {
+                    context.commit(types.APP.upload_set_file, {
+                        field: 'percent',
+                        value: p,
+                        filepath: file.path,
+                    });
+                },
+            };
+            context.commit(types.APP.upload_set_file, {
+                field: 'status',
+                value: 'pending',
+                filepath: file.path,
+            });
+            cloudStorage.upload(params, (err, ret) => {
+                if (err) {
+                    context.commit(types.APP.upload_set_file, [{
+                            field: 'status',
+                            value: 'error',
+                            filepath: file.path,
+                        }, {
+                            field: 'error',
+                            value: err.error,
+                            filepath: file.path,
+                        }
+                    ]);
+                } else {
+                    context.commit(types.APP.upload_set_file, {
+                        field: 'status',
+                        value: 'finish',
+                        filepath: file.path,
+                    });
+                }
+                context.dispatch(types.APP.upload_a_start_upload);
+            });
+        },
+        [types.APP.upload_a_append_file](context, { path, bucket, key }) {
+            context.commit(types.APP.upload_append_file, { path, bucket, key });
+            context.dispatch(types.APP.upload_a_start_upload);
         }
     },
     getters: {
@@ -195,7 +243,7 @@ export default {
         [types.APP.upload_status_filelist]: (state) => (status) => {
             return state.upload.file.query.filter(path => {
                 const file = state.upload.file[path];
-                return file.status = status;
+                return file.status === status;
             }).map(path => state.upload.file[path]);
         },
     }

@@ -51,6 +51,7 @@ function fetch(params, callback) {
  * @param callback
  */
 function upload(params, callback) {
+    console.log('upload');
     let options = {
         scope: params.bucket,
     };

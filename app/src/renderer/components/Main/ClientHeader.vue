@@ -52,7 +52,7 @@
 
         <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
             <i-button type="text" @click="actionBtn(3)" v-if="bucket.name">
-                <Badge count="100" overflow-count="99">
+                <Badge v-bind:count="uploadCount" overflow-count="99">
                     <Tooltip content="上传列表" placement="bottom">
                         <Icon type="ios-cloud-upload-outline" size="32"/>
                     </Tooltip>
@@ -118,6 +118,11 @@
             },
             icon() {
                 return this.bucket.name ? 'ios-at' : 'ios-cog';
+            },
+            uploadCount() {
+                const errorList = this.$store.getters[types.APP.upload_status_filelist]('error');
+                const finishList = this.$store.getters[types.APP.upload_status_filelist]('finish');
+                return this.$store.state.app.upload.file.query.length - errorList.length - finishList.length;
             },
             placeholder() {
                 if (this.currentDir) {
@@ -229,7 +234,6 @@
             handleFile(paths) {
                 //多文件上传
                 this.filePaths = paths;
-                // TODO: batch action
 
                 this.uploadModal.type = 'upload';
                 this.uploadModal.isShow = true;
@@ -241,6 +245,16 @@
                 this.uploadFile();
             },
             uploadFile() {
+                this.filePaths.forEach(path => {
+                    const key = this.uploadModal.prepend + this.uploadModal.input + util.getPostfix(path);
+                    const params = {
+                        bucket: this.bucket.name,
+                        path,
+                        key, 
+                    };
+                    this.$store.dispatch(types.APP.upload_a_append_file, params);
+                });
+                /*
                 let filePath = this.filePaths[0];
                 let key = this.uploadModal.prepend + this.uploadModal.input + util.getPostfix(filePath);
 
@@ -263,6 +277,7 @@
                 } else {
                     cloudStorage.upload(param, this.handleResult);
                 }
+                */
             },
             handleResult(err, ret, index) {
 
