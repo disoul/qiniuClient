@@ -20,7 +20,7 @@
     }
 
     .upload-btn {
-        margin-right: 10px;
+        margin-right: 5px;
         margin-top: 5px;
     }
 
@@ -51,6 +51,14 @@
         </div>
 
         <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
+            <i-button type="text" @click="actionBtn(0)" v-if="bucket.name">
+                <Tooltip content="添加文件" placement="bottom">
+                    <Icon type="ios-plus-outline" size="32"/>
+                </Tooltip>
+            </i-button>
+        </div>
+
+        <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
             <i-button type="text" @click="actionBtn(3)" v-if="bucket.name">
                 <Badge v-bind:count="uploadCount" overflow-count="99">
                     <Tooltip content="上传列表" placement="bottom">
@@ -59,6 +67,7 @@
                 </Badge>
             </i-button>
         </div>
+
 
         <Input class="input-search" v-model="search" :placeholder="placeholder" @on-enter="actionBtn(2)"
                v-if="bucket.name"></Input>
@@ -81,12 +90,11 @@
                 文件名:{{uploadModal.prepend}}{{uploadModal.input ? uploadModal.input + '/' : ''}}{{_path | getfileNameByPath}}
             </div>
         </Modal>
-        <upload-plane v-show="showUpload"></upload-plane>
     </div>
 </template>
 <script>
     import {util, cloudStorage, Constants} from '../../service/index';
-    import {mapGetters, mapActions} from 'vuex';
+    import {mapGetters, mapActions, mapState} from 'vuex';
     import UploadPlane from './UploadPlane.vue';
     import * as types from '../../vuex/mutation-types';
 
@@ -106,7 +114,6 @@
                     path: '',
                     fileName: '',
                 },
-                showUpload: false,
                 search: '',
                 filePaths: [],
                 messageFlag: false
@@ -118,11 +125,6 @@
             },
             icon() {
                 return this.bucket.name ? 'ios-at' : 'ios-cog';
-            },
-            uploadCount() {
-                const errorList = this.$store.getters[types.APP.upload_status_filelist]('error');
-                const finishList = this.$store.getters[types.APP.upload_status_filelist]('finish');
-                return this.$store.state.app.upload.file.query.length - errorList.length - finishList.length;
             },
             placeholder() {
                 if (this.currentDir) {
@@ -137,7 +139,12 @@
                 } else {
                     return this.bucket.currentDir;
                 }
-            }
+            },
+            uploadCount() {
+                const errorList = this.$store.getters[types.APP.upload_status_filelist]('error');
+                const finishList = this.$store.getters[types.APP.upload_status_filelist]('finish');
+                return this.$store.state.app.upload.file.query.length - errorList.length - finishList.length;
+            },
         },
         watch: {
             'bucket.domain': function (val, oldVal) {

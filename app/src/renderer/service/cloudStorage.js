@@ -51,7 +51,8 @@ function fetch(params, callback) {
  * @param callback
  */
 function upload(params, callback) {
-    console.log('upload');
+    const BLOCK_SIZE = 4 * 1024 * 1024;
+
     let options = {
         scope: params.bucket,
     };
@@ -62,14 +63,31 @@ function upload(params, callback) {
 
     let resumeUploader = new qiniu.resume_up.ResumeUploader(config);
     let putExtra = new qiniu.resume_up.PutExtra();
+    let lastTime = Date.now();
+    let lastBytes = 0;
+    let lastSpeed = 0;
+    let lastInterval;
     putExtra.progressCallback = (uploadBytes, totalBytes) => {
         if (params.progressCallback) {
-            params.progressCallback(parseInt((uploadBytes / totalBytes * 10000)) / 100)
+            window.clearInterval(lastInterval);
+            const bytes = uploadBytes - lastBytes;
+            const time = Date.now();
+            const speed = bytes / (time - lastTime);
+            lastSpeed = speed;
+            lastTime = time;
+            lastBytes = uploadBytes;
+            params.progressCallback(parseInt((uploadBytes / totalBytes * 10000)) / 100, speed)
+            lastInterval = window.setInterval(() => {
+                const fakeBytes = Math.min(lastBytes + Math.min((speed * (Date.now() - time)), BLOCK_SIZE), totalBytes - 1);
+                params.progressCallback(parseInt((fakeBytes / totalBytes * 10000)) / 100, speed)
+            }, 500);
         }
     };
 
+
     resumeUploader.putFile(uploadToken, params.key, params.path, putExtra, function (respErr, respBody, respInfo) {
-        if (respBody.error) {
+        lastInterval && window.clearInterval(lastInterval);
+        if (respBody && respBody.error) {
             respErr = {"error": respBody.error};
         }
         console.log(respErr, respBody, respInfo);

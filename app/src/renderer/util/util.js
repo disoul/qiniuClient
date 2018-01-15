@@ -64,3 +64,25 @@ export function getPostfix(path) {
         return path;
     }
 }
+
+export function getFilename(pathanme) {
+    const path = require('path');
+    return path.basename(pathanme);
+}
+
+/**
+ * @param  speed 单位 kb/s
+ */
+export function getSpeedText(speed) {
+    // 等待第一个4M chunk返回
+    if (speed === -1) {
+        return '正在开始...';
+    }
+    let unit = 'kb/s';
+    if (speed > 1000) {
+        speed = speed / 1024.0;
+        unit = 'm/s';
+    }
+
+    return `${speed.toFixed(2)} ${unit}`;
+}

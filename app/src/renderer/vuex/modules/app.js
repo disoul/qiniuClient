@@ -35,11 +35,12 @@ export default {
         },
         app_buckets: [],
         upload: {
-          file: {
-            query: [],
-          },
-          limit: 4,
-          showPlane: false,
+            file: {
+                  query: [],
+            },
+            limit: 4,
+            downloadLimit: 4,
+            showPlane: false,
         },
     },
     mutations: {
@@ -93,9 +94,22 @@ export default {
                 // idle pending pause error finish
                 status: 'idle',
                 percent: 0,
-                speed: 0,
+                speed: -1,
                 bucket,
                 path,
+                type: 'upload',
+            };
+            state.upload.file.query.push(path);
+        },
+        [types.APP.download_append_file](state, { url, savePath }) {
+            if (state.upload.file[url]) return; 
+            state.upload.file[url] = {
+                url,
+                savePath,
+                status: 'idle',
+                percent: 0,
+                speed: -1,
+                type: 'download',
             };
             state.upload.file.query.push(path);
         },
@@ -109,6 +123,8 @@ export default {
             console.log('args', args);
             args.forEach(item => {
                 const { filepath, field, value } = item;
+                // 触发setter
+                state.upload.file = { ...state.upload.file };
                 state.upload.file[filepath][field] = value;
             });
         },
@@ -169,12 +185,17 @@ export default {
                 bucket: file.bucket,
                 key: file.key,
                 path: file.path,
-                progressCallback: (p) => {
-                    context.commit(types.APP.upload_set_file, {
-                        field: 'percent',
-                        value: p,
-                        filepath: file.path,
-                    });
+                progressCallback: (p, speed) => {
+                    context.commit(types.APP.upload_set_file, [{
+                            field: 'percent',
+                            value: p,
+                            filepath: file.path,
+                        }, {
+                            field: 'speed',
+                            value: speed,
+                            filepath: file.path,
+                        }
+                    ]);
                 },
             };
             context.commit(types.APP.upload_set_file, {
@@ -190,7 +211,7 @@ export default {
                             filepath: file.path,
                         }, {
                             field: 'error',
-                            value: err.error,
+                            value: err.error || err,
                             filepath: file.path,
                         }
                     ]);
@@ -204,9 +225,22 @@ export default {
                 context.dispatch(types.APP.upload_a_start_upload);
             });
         },
+        [types.APP.download_a_start_upload](context, { url }) {
+            const pendingLength = context.getters.download_status_filelist('pending').length;
+            const idleList = context.getters.download_status_filelist('idle');
+            console.log('idleList', idleList);
+            if (pendingLength >= context.state.upload.downloadLimit || idleList.length <= 0) {
+                return;
+            }
+            const file = url ? context.state.upload.file[url] : idleList[0];
+        },
         [types.APP.upload_a_append_file](context, { path, bucket, key }) {
             context.commit(types.APP.upload_append_file, { path, bucket, key });
             context.dispatch(types.APP.upload_a_start_upload);
+        },
+        [types.APP.download_a_append_file](context, { url, savePath }) {
+            context.commit(types.APP.download_append_file, { url, savePath });
+            context.dispatch(types.APP.download_a_start_upload);
         }
     },
     getters: {
@@ -240,10 +274,22 @@ export default {
         [types.APP.app_buckets](state) {
             return state.app_buckets;
         },
+        [types.APP.upload_filelist]: (state) => (type) => {
+            return state.upload.file.query.filter(path => {
+                const file = state.upload.file[path];
+                return file.type === type;
+            }).map(path => state.upload.file[path]);
+        },
         [types.APP.upload_status_filelist]: (state) => (status) => {
             return state.upload.file.query.filter(path => {
                 const file = state.upload.file[path];
-                return file.status === status;
+                return file.status === status && file.type === 'upload';
+            }).map(path => state.upload.file[path]);
+        },
+        [types.APP.download_status_filelist]: (state) => (status) => {
+            return state.upload.file.query.filter(path => {
+                const file = state.upload.file[path];
+                return file.status === status && file.type === 'download';
             }).map(path => state.upload.file[path]);
         },
     }

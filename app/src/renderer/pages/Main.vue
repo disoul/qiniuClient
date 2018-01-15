@@ -18,6 +18,7 @@
             background: #464c5b;
             display: flex;
             flex-direction: column;
+            overflow: auto;
 
             .navicon_btn {
                 text-align: left;
