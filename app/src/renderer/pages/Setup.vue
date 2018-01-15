@@ -43,6 +43,21 @@
         </div>
 
         <div class="item">
+            最大上传任务数：
+            <Input
+                v-on:on-change="changeUploadLimit"
+                type="number"
+                v-bind:value="uploadLimit" size="small" style="width: 100px" number />
+        </div>
+        <div class="item">
+            最大下载任务数：
+            <Input
+                v-on:on-change="changeDownloadLimit"
+                type="number"
+                v-bind:value="downloadLimit" size="small" style="width: 100px" number />
+        </div>
+
+        <div class="item">
             下载目录：<br>
             <Row class="row-line">
                 <Col span="10">
@@ -121,7 +136,13 @@
                 setup_downloaddir: types.APP.setup_downloaddir,
                 setup_privatebucket: types.APP.setup_privatebucket,
                 setup_deadline: types.APP.setup_deadline
-            })
+            }),
+            downloadLimit() {
+                return this.$store.state.app.upload.downloadLimit;
+            },
+            uploadLimit() {
+                return this.$store.state.app.upload.limit;
+            },
         },
         components: {ClientHeader},
         created: function () {
@@ -190,7 +211,19 @@
                         break;
                 }
                 this.$electron.shell.openExternal(url);
-            }
+            },
+            changeDownloadLimit(e) {
+                this.$store.commit(
+                    types.APP.upload_set_limit,
+                    { type: 'download', value: Number(e.target.value) },
+                );
+            },
+            changeUploadLimit(e) {
+                this.$store.commit(
+                    types.APP.upload_set_limit,
+                    { type: 'upload', value: Number(e.target.value) },
+                );
+            },
         }
     }
 </script>

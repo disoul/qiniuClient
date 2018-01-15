@@ -132,6 +132,18 @@ export default {
         [types.APP.upload_set_plane](state, value) {
             state.upload.showPlane = value == undefined ? !state.upload.showPlane : value;
         },
+        [types.APP.upload_set_limit](state, { type, value }) {
+            switch (type) {
+                case 'download':
+                    state.upload.downloadLimit = value;
+                    break;
+                case 'upload':
+                    state.upload.limit = value;
+                    break;
+                default:
+                    throw new Error('unsupport type');
+            }
+        },
     },
     actions: {
         [types.APP.qiniu_key](context, json) {
