@@ -53,6 +53,16 @@ export default {
             event.stopPropagation();
         },
         downloadFiles() {
+            const files = this.bucket.selection;
+            for (let i = 0; i < files.length; i += 1) {
+                const currentFile = this.bucket.selection[i];
+                const url = this.getResoureUrl(null, currentFile.key);
+                this.$store.dispatch(
+                    types.APP.download_a_append_file,
+                    { url, savePath: this.setup_downloaddir, size: currentFile.fsize },
+                );
+            }
+            /*
             if (this.bucket.selection.length > 0) {
                 this.$Loading.start();
                 let option = {};
@@ -67,6 +77,7 @@ export default {
 
                 this.$Message.info('文件下载完成');
             }
+            */
         },
         removes() {
             this.deleteKey = this.bucket.selection[0].key;

@@ -109,6 +109,54 @@
                 }
             }
         },
+        created() {
+            console.log('ipc on');
+            this.$electron.ipcRenderer.removeAllListeners('updateDownloadProgress');
+            this.$electron.ipcRenderer.on('updateDownloadProgress', (event, num, url, error) => {
+                if (error) {
+                    this.$store.commit(types.APP.download_set_file, [
+                        { field: 'status', value: 'error', filepath: url },
+                        { field: 'error', value: error, filepath: url },
+                    ]);
+                    return;
+                }
+                const lastTime = this.$store.state.app.upload.file[url].start;
+                const lastBytes = this.$store.state.app.upload.file[url].bytes || 0;
+                const currentTime = Date.now();
+                const downloadPengingCount = this.$store.getters[types.APP.download_status_filelist]('pending').length;
+                if (currentTime - lastTime > downloadPengingCount * 500) {
+                    const fileSize = this.$store.state.app.upload.file[url].size;
+                    const receivedBytes = num * fileSize;
+                    const speed = (receivedBytes - lastBytes) / (currentTime - lastTime);
+                    this.$store.commit(
+                        types.APP.download_set_file,
+                        [
+                            { field: 'percent', value: Number((num * 100).toFixed(2)), filepath: url },
+                            { field: 'speed', value: speed, filepath: url },
+                            { field: 'start', value: currentTime, filepath: url },
+                            { field: 'bytes', value: num * fileSize, filepath: url },
+                        ],
+                    );
+                } else {
+                    this.$store.commit(
+                        types.APP.download_set_file,
+                        [
+                            { field: 'percent', value: Number((num * 100).toFixed(2)), filepath: url },
+                        ],
+                    );
+
+                }
+
+                if (num === 1) {
+                    console.log('finish', url);
+                    this.$store.commit(
+                        types.APP.download_set_file,
+                        { field: 'status', value: 'finish', filepath: url },
+                    );
+                    this.$store.dispatch(types.APP.download_a_start_upload);
+                }
+            });
+        },
         mounted() {
             if (this.$route.query && this.$route.query.bucketname) {
                 if (this.$route.query.bucketname !== this.bucket.name) {

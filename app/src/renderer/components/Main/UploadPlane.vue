@@ -73,23 +73,45 @@
       ></Icon>
     </div>
     <Tabs value="upload">
-      <TabPane label="上传" name="upload">
+      <TabPane :label="label('上传', uploadCount)" name="upload">
         <ul class="filelist">
-          <li v-for="filepath, index in files.query" :key="filepath" class="fileitem">
+          <li v-for="fileitem, index in uploadFiles" :key="fileitem.path" class="fileitem">
             <div class="control-wrapper">
 
             </div>
             <div class="fileitem__main">
               <div class="fileitem__info">
-                <p>{{filenames[index]}}</p>
-                <p class="fileitem__status" v-bind:class="{ [files[filepath].status]: true }">
-                  {{ getStatusText(files[filepath]) }}
+                <p>{{filenames[fileitem.path]}}</p>
+                <p class="fileitem__status" v-bind:class="{ [fileitem.status]: true }">
+                  {{ getStatusText(fileitem) }}
                 </p>
               </div>
               <Progress
                 :stroke-width="6" class="progress" 
-                :percent="files[filepath].percent"
-                :status="getProgessStatus(files[filepath].status)"
+                :percent="fileitem.percent"
+                :status="getProgessStatus(fileitem.status)"
+              ></Progress>
+            </div>
+          </li>
+        </ul>
+      </TabPane>
+      <TabPane :label="label('下载', downloadCount)" name="download">
+        <ul class="filelist">
+          <li v-for="fileitem, index in downloadFiles" :key="fileitem.path" class="fileitem">
+            <div class="control-wrapper">
+
+            </div>
+            <div class="fileitem__main">
+              <div class="fileitem__info">
+                <p>{{filenames[fileitem.url]}}</p>
+                <p class="fileitem__status" v-bind:class="{ [fileitem.status]: true }">
+                  {{ getStatusText(fileitem) }}
+                </p>
+              </div>
+              <Progress
+                :stroke-width="6" class="progress" 
+                :percent="fileitem.percent"
+                :status="getProgessStatus(fileitem.status)"
               ></Progress>
             </div>
           </li>
@@ -111,17 +133,46 @@ export default {
     ...mapState({
       files: state => state.app.upload.file,
     }),
-    ...mapGetters([
-      types.APP.upload_status_filelist
-    ]),
+    ...mapGetters({
+      uploadStatus: types.APP.upload_status_filelist,
+      downloadStatus: types.APP.download_status_filelist,
+    }),
     filenames() {
       const query = this.$store.state.app.upload.file.query;
-      return query.map(getFilename);
+      let fileNameMap = {};
+      query.forEach(path => {
+        fileNameMap[path] = getFilename(path);
+      });
+      return fileNameMap;
+    },
+    uploadCount() {
+      const uploadStatus = this.$store.getters[types.APP.upload_status_filelist];
+      return uploadStatus('idle').length + uploadStatus('pending').length + uploadStatus('pause').length;
+    },
+    downloadCount() {
+      const downloadStatus = this.$store.getters[types.APP.download_status_filelist];
+      return downloadStatus('idle').length + downloadStatus('pending').length + downloadStatus('pause').length;
+    },
+    uploadFiles() {
+      return this.$store.getters[types.APP.upload_filelist]('upload');
+    },
+    downloadFiles() {
+      return this.$store.getters[types.APP.upload_filelist]('download');
     },
   },
   methods: {
+    label: (title, count) => (h) => {
+      return h('div', [
+        h('span', title),
+        h('Badge', {
+          props: {
+            count,
+            'overflow-count': 99,
+          }
+        }),
+      ]);
+    },
     closePlane() {
-      console.log('close');
       this.$store.commit(types.APP.upload_set_plane, false);
     },
     getProgessStatus(status) {

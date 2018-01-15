@@ -112,7 +112,7 @@
                     prepend: '',
                     input: '',
                     path: '',
-                    fileName: '',
+                    fileName: ''
                 },
                 search: '',
                 filePaths: [],
@@ -143,7 +143,9 @@
             uploadCount() {
                 const errorList = this.$store.getters[types.APP.upload_status_filelist]('error');
                 const finishList = this.$store.getters[types.APP.upload_status_filelist]('finish');
-                return this.$store.state.app.upload.file.query.length - errorList.length - finishList.length;
+                const errorList_d = this.$store.getters[types.APP.download_status_filelist]('error');
+                const finishList_d = this.$store.getters[types.APP.download_status_filelist]('finish');
+                return this.$store.state.app.upload.file.query.length - errorList.length - finishList.length - errorList_d.length - finishList_d.length;
             },
         },
         watch: {

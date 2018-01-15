@@ -133,15 +133,6 @@
                 this.downloadFiles();
             });
 
-            this.$electron.ipcRenderer.removeAllListeners('updateDownloadProgress');
-            this.$electron.ipcRenderer.on('updateDownloadProgress', (event, num) => {
-                this.$Loading.update(num * 100);
-                if (num === 1) {
-                    this.$Loading.finish();
-                    console.log(this.bucket.selection.length + ':' + this.bucket.name);
-                    this.downloadFiles();
-                }
-            });
         },
         mounted() {
             this.setTableSize();

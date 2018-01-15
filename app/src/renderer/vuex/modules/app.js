@@ -4,6 +4,7 @@
 import * as types from '../mutation-types';
 import { cloudStorage } from '../../service';
 import * as util from '../../util/util';
+import electron from 'electron';
 
 const storage = require('electron-json-storage');
 
@@ -101,17 +102,18 @@ export default {
             };
             state.upload.file.query.push(path);
         },
-        [types.APP.download_append_file](state, { url, savePath }) {
+        [types.APP.download_append_file](state, { url, savePath, size }) {
             if (state.upload.file[url]) return; 
             state.upload.file[url] = {
                 url,
                 savePath,
+                size,
                 status: 'idle',
                 percent: 0,
                 speed: -1,
                 type: 'download',
             };
-            state.upload.file.query.push(path);
+            state.upload.file.query.push(url);
         },
         [types.APP.upload_set_file](state, payload) {
             let args = [];
@@ -120,7 +122,6 @@ export default {
             } else {
                 args = payload;
             }
-            console.log('args', args);
             args.forEach(item => {
                 const { filepath, field, value } = item;
                 // 触发setter
@@ -175,7 +176,6 @@ export default {
         [types.APP.upload_a_start_upload](context, path) {
             const pendingLength = context.getters.upload_status_filelist('pending').length;
             const idleList = context.getters.upload_status_filelist('idle');
-            console.log('idleList', idleList);
             if (pendingLength >= context.state.upload.limit || idleList.length <= 0) {
                 return;
             }
@@ -225,21 +225,29 @@ export default {
                 context.dispatch(types.APP.upload_a_start_upload);
             });
         },
-        [types.APP.download_a_start_upload](context, { url }) {
+        [types.APP.download_a_start_upload](context, url) {
             const pendingLength = context.getters.download_status_filelist('pending').length;
             const idleList = context.getters.download_status_filelist('idle');
-            console.log('idleList', idleList);
             if (pendingLength >= context.state.upload.downloadLimit || idleList.length <= 0) {
                 return;
             }
             const file = url ? context.state.upload.file[url] : idleList[0];
+            context.commit(types.APP.download_set_file, [
+                { field: 'status', value: 'pending', filepath: file.url },
+                { field: 'start', value: Date.now(), filepath: file.url },
+            ]);
+            electron.ipcRenderer.send(
+                'downloadFile',
+                file.url,
+                { directory: file.savePath },
+            );
         },
         [types.APP.upload_a_append_file](context, { path, bucket, key }) {
             context.commit(types.APP.upload_append_file, { path, bucket, key });
             context.dispatch(types.APP.upload_a_start_upload);
         },
-        [types.APP.download_a_append_file](context, { url, savePath }) {
-            context.commit(types.APP.download_append_file, { url, savePath });
+        [types.APP.download_a_append_file](context, { url, savePath, size }) {
+            context.commit(types.APP.download_append_file, { url, savePath, size });
             context.dispatch(types.APP.download_a_start_upload);
         }
     },

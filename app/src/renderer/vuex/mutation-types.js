@@ -44,9 +44,16 @@ export const APP = {
     menu_a_state: 'menu_a_state',
 
     upload_append_file: 'upload_append_file',
+    download_append_file: 'download_append_file',
     upload_set_plane: 'upload_set_plane',
     upload_set_file: 'upload_set_file',
     upload_a_append_file: 'upload_a_append_file',
     upload_a_start_upload: 'upload_a_start_upload',
     upload_status_filelist: 'upload_status_filelist',
+    upload_filelist: 'upload_filelist',
+
+    download_a_append_file: 'download_a_append_file',
+    download_a_start_upload: 'download_a_start_upload',
+    download_status_filelist: 'download_status_filelist',
+    download_set_file: 'upload_set_file',
 };

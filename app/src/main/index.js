@@ -2,7 +2,8 @@
 
 import {app, BrowserWindow, Menu, ipcMain, dialog} from 'electron'
 
-const {download} = require('electron-dl');
+//const {download} = require('electron-dl');
+const {download} = require('../libs/electron-dl');
 
 import * as util from './util'
 import * as trayUtil from './trayUtil';
@@ -76,20 +77,20 @@ const registerIPC = function () {
 
     //下载文件
     ipcMain.on('downloadFile', function (event, file, option) {
-        option.onProgress = function (num) {
-            if (num !== 1) {
-                event.sender.send('updateDownloadProgress', num);
-            }
+        option.onItemProgress = function (num, item) {
+            event.sender.send('updateDownloadProgress', num, item.getURL(), null);
         };
 
         download(BrowserWindow.getFocusedWindow(), file, option)
             .then(dl => {
+                if (dl.getURL() !== file) return;
                 console.log('getSavePath:' + dl.getSavePath());
-                event.sender.send('updateDownloadProgress', 1);
+                event.sender.send('updateDownloadProgress', 1, file, null);
             })
             .catch(error => {
+                if (dl.getURL() !== file) return;
                 console.error(error);
-                event.sender.send('updateDownloadProgress', 1);
+                event.sender.send('updateDownloadProgress', 1, file, error);
             });
     });
 
