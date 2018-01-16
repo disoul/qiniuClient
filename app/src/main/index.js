@@ -78,19 +78,19 @@ const registerIPC = function () {
     //下载文件
     ipcMain.on('downloadFile', function (event, file, option) {
         option.onItemProgress = function (num, item) {
-            event.sender.send('updateDownloadProgress', num, item.getURL(), null);
+            event.sender.send('updateDownloadProgress', num, item.getURL().split('?')[0], null);
         };
 
         download(BrowserWindow.getFocusedWindow(), file, option)
             .then(dl => {
                 if (dl.getURL() !== file) return;
                 console.log('getSavePath:' + dl.getSavePath());
-                event.sender.send('updateDownloadProgress', 1, file, null);
+                event.sender.send('updateDownloadProgress', 1, file.split('?')[0], null);
             })
             .catch(error => {
                 if (dl.getURL() !== file) return;
                 console.error(error);
-                event.sender.send('updateDownloadProgress', 1, file, error);
+                event.sender.send('updateDownloadProgress', 1, file.split('?')[0], error);
             });
     });
 

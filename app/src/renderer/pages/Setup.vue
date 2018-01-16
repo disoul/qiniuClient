@@ -86,6 +86,15 @@
         </div>
 
         <div class="item">
+            <Row class="row-line">
+                <Col span="10" style="display: flex;align-items: center;">
+                资源访问链接有效时间 <Input v-model="deadline" size="small" placeholder="过期时间,单位分钟" style="width: 20%; margin: 0 10px"/>分钟
+                </Col>
+                <Col span="12" offset="1">
+                <Button @click="saveDeadline" type="ghost" size="small" class="save-btn">保存</Button>
+                </Col>
+            </Row>
+           <!-- 
             私有空间：
             <Button @click="openBrowser(1)" size="small">什么是私有空间</Button>
             <br>
@@ -102,6 +111,7 @@
                 <Button @click="saveDeadline" type="ghost" size="small" class="save-btn">保存</Button>
                 </Col>
             </Row>
+            -->
         </div>
     </div>
 </template>
@@ -213,14 +223,14 @@
                 this.$electron.shell.openExternal(url);
             },
             changeDownloadLimit(e) {
-                this.$store.commit(
-                    types.APP.upload_set_limit,
+                this.$store.dispatch(
+                    types.APP.upload_a_set_limit,
                     { type: 'download', value: Number(e.target.value) },
                 );
             },
             changeUploadLimit(e) {
-                this.$store.commit(
-                    types.APP.upload_set_limit,
+                this.$store.dispatch(
+                    types.APP.upload_a_set_limit,
                     { type: 'upload', value: Number(e.target.value) },
                 );
             },

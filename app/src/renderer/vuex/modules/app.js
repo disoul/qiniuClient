@@ -84,6 +84,7 @@ export default {
         },
         [types.APP.app_buckets](state, value) {
             state.app_buckets = value;
+            state.setup.privatebucket = value;
         },
         [types.APP.app_setup_init](state, value) {
             state.setup = value;
@@ -103,8 +104,9 @@ export default {
             state.upload.file.query.push(path);
         },
         [types.APP.download_append_file](state, { url, savePath, size }) {
-            if (state.upload.file[url]) return; 
-            state.upload.file[url] = {
+            const uniqueUrl = url.split('?')[0];
+            if (state.upload.file[uniqueUrl]) return; 
+            state.upload.file[uniqueUrl] = {
                 url,
                 savePath,
                 size,
@@ -113,7 +115,7 @@ export default {
                 speed: -1,
                 type: 'download',
             };
-            state.upload.file.query.push(url);
+            state.upload.file.query.push(uniqueUrl);
         },
         [types.APP.upload_set_file](state, payload) {
             let args = [];
@@ -245,8 +247,8 @@ export default {
             }
             const file = url ? context.state.upload.file[url] : idleList[0];
             context.commit(types.APP.download_set_file, [
-                { field: 'status', value: 'pending', filepath: file.url },
-                { field: 'start', value: Date.now(), filepath: file.url },
+                { field: 'status', value: 'pending', filepath: file.url.split('?')[0] },
+                { field: 'start', value: Date.now(), filepath: file.url.split('?')[0] },
             ]);
             electron.ipcRenderer.send(
                 'downloadFile',
@@ -261,7 +263,21 @@ export default {
         [types.APP.download_a_append_file](context, { url, savePath, size }) {
             context.commit(types.APP.download_append_file, { url, savePath, size });
             context.dispatch(types.APP.download_a_start_upload);
-        }
+        },
+        [types.APP.upload_a_set_limit](context, { type, value }) {
+            switch (type) {
+                case 'download':
+                    context.commit(types.APP.upload_set_limit, { type, value });
+                    context.dispatch(types.APP.download_a_start_upload);
+                    break;
+                case 'upload':
+                    context.commit(types.APP.upload_set_limit, { type, value });
+                    context.dispatch(types.APP.upload_a_start_upload);
+                    break;
+                default:
+                    throw new Error('unsupport type');
+            }
+        },
     },
     getters: {
         [types.APP.setup_deadline](state) {

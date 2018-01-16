@@ -65,9 +65,10 @@ export function getPostfix(path) {
     }
 }
 
-export function getFilename(pathanme) {
+export function getFilename(pathname) {
     const path = require('path');
-    return path.basename(pathanme);
+    // console.log('pathname', pathname, path.basename(pathname));
+    return path.basename(pathname);
 }
 
 /**

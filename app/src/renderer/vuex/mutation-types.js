@@ -47,6 +47,7 @@ export const APP = {
     download_append_file: 'download_append_file',
     upload_set_plane: 'upload_set_plane',
     upload_set_limit: 'upload_set_limit',
+    upload_a_set_limit: 'upload_a_set_limit',
     upload_set_file: 'upload_set_file',
     upload_a_append_file: 'upload_a_append_file',
     upload_a_start_upload: 'upload_a_start_upload',
