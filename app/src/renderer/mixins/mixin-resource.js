@@ -62,22 +62,24 @@ export default {
                     { url, savePath: this.setup_downloaddir, size: currentFile.fsize },
                 );
             }
-            /*
-            if (this.bucket.selection.length > 0) {
-                this.$Loading.start();
-                let option = {};
-                if (this.setup_downloaddir) {
-                    option.directory = this.setup_downloaddir;
-                }
-
-                this.$electron.ipcRenderer.send('downloadFile', this.getResoureUrl(null, this.bucket.selection[0].key), option);
-                this.bucket.selection.shift();
-            } else {
-                this.$refs['table'] && this.$refs['table'].selectAll(false);
-
-                this.$Message.info('文件下载完成');
-            }
-            */
+        },
+        copyFiles() {
+            const files = this.bucket.selection;
+            const srcBucket = this.bucket.name;
+            console.log(files, srcBucket);
+            this.$store.commit(types.APP.app_copy_set, {
+                srcKeys: files.map(f => f.key),
+                srcBucket,
+            });
+        },
+        pasteFiles() {
+            this.$store.dispatch(types.APP.copy_a_paste, {
+                bucket: this.bucket.name,
+                callback: (e, respBody) => {
+                    this.$Message.info('复制完成');
+                    this.$emit('on-update');
+                },
+            });
         },
         removes() {
             this.deleteKey = this.bucket.selection[0].key;

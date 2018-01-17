@@ -112,4 +112,24 @@ function remove(params, callback) {
     });
 }
 
-export {init, httpAuthorization, getPrivateUrl, remove, upload, fetch}
+function copy(params, callback) {
+    let config = new qiniu.conf.Config();
+    let bucketManager = new qiniu.rs.BucketManager(getToken(), config);
+    const copyOperations = params.srcKeys.map(key => {
+        return qiniu.rs.copyOp(params.srcBucket, key, params.destBucket, key);
+    });
+
+    bucketManager.batch(copyOperations, function (err, respBody, respInfo) {
+        if (err) {
+            callback(err);
+            return;
+        }
+        if (parseInt(respInfo.statusCode / 100) == 2) {
+            callback(null, respBody);
+        } else {
+            callback(respInfo, respBody);
+        }
+    });
+}   
+
+export {init, httpAuthorization, getPrivateUrl, remove, upload, fetch, copy}

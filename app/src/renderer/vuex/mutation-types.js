@@ -54,6 +54,9 @@ export const APP = {
     upload_status_filelist: 'upload_status_filelist',
     upload_filelist: 'upload_filelist',
 
+    app_copy_set: 'app_copy_set',
+    copy_a_paste: 'copy_a_paste',
+
     download_a_append_file: 'download_a_append_file',
     download_a_start_upload: 'download_a_start_upload',
     download_status_filelist: 'download_status_filelist',

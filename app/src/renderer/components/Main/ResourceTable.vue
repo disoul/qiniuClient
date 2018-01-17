@@ -22,6 +22,7 @@
     <div class="layout-content">
         <Table ref="table" border :columns="columns" :context="self"
                :height="tableHeight" :data="bucket.files" no-data-text="暂无数据"
+               v-on:on-context-menu="onRowClick"
                @on-selection-change="onSelectionChange"></Table>
         <Modal
                 v-model="deleteNoAskModel"
@@ -76,7 +77,7 @@
                         }
                     },
                     {
-                        title: '操作', key: 'action', width: 165,
+                        title: '操作', key: 'action', width: 175,
                         render: (h, item) => {
                             return h('div', [
                                 h('i-button', {
@@ -90,7 +91,7 @@
                                             this.show(item.index)
                                         }
                                     }
-                                }, '查看'),
+                                }, '修改信息'),
                                 h('span', {}, ' '),
                                 h('i-button', {
                                     class:'primary-line-btn',
@@ -103,20 +104,7 @@
                                             this.copy(item.index)
                                         }
                                     }
-                                }, '复制'),
-                                h('span', {}, ' '),
-                                h('i-button', {
-                                    class:'error-line-btn',
-                                    props: {
-                                        type: 'error',
-                                        size: 'small'
-                                    },
-                                    on: {
-                                        click: () => {
-                                            this.remove(item.index)
-                                        }
-                                    }
-                                }, '删除')
+                                }, '获取外链'),
                             ])
                         }
                     }],
@@ -133,6 +121,15 @@
                 this.downloadFiles();
             });
 
+            EventBus.$off(Constants.Event.copy);
+            EventBus.$on(Constants.Event.copy, () => {
+                this.copyFiles();
+            });
+
+            EventBus.$off(Constants.Event.paste);
+            EventBus.$on(Constants.Event.paste, () => {
+                this.pasteFiles();
+            });
         },
         mounted() {
             this.setTableSize();
@@ -143,6 +140,9 @@
         methods: {
             onSelectionChange(selection) {
                 this.bucket.selection = selection;
+            },
+            onRowClick(e) {
+                console.log('click', e);
             },
             setTableSize() {
                 if (this.$parent) {

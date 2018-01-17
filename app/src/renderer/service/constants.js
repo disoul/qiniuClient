@@ -17,7 +17,9 @@ export const URL = {
 
 export const Event = {
     removes: 'removes',
-    download: 'download'
+    download: 'download',
+    copy: 'copy',
+    paste: 'paste',
 };
 
 export const CopyType = {

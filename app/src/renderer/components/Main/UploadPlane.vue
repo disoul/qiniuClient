@@ -103,7 +103,7 @@
             </div>
             <div class="fileitem__main">
               <div class="fileitem__info">
-                <p>{{filenames[fileitem.url]}}</p>
+                <p>{{filenames[fileitem.url.split('?')[0]]}}</p>
                 <p class="fileitem__status" v-bind:class="{ [fileitem.status]: true }">
                   {{ getStatusText(fileitem) }}
                 </p>

@@ -19,11 +19,21 @@
         <div class="dir-layout">
             <DirTag v-if="endable" :bucket="bucket" @on-click="doDirSearch"></DirTag>
 
+            <Button type="ghost" size="small" @click="copy()" icon="ios-download"
+                    style="margin-right: 10px;background: #FFFFFF;"
+                    v-if="bucket.selection.length > 0">复制({{bucket.selection.length}})
+            </Button>
+
+            <Button type="ghost" size="small" @click="paste()" icon="ios-download"
+                    style="margin-right: 10px;background: #FFFFFF;"
+                    v-if="copyState">粘贴({{copyKeys.length}})
+            </Button>
 
             <Button type="ghost" size="small" @click="downloads()" icon="ios-download"
                     style="margin-right: 10px;background: #FFFFFF;"
                     v-if="bucket.selection.length > 0">下载({{bucket.selection.length}})
             </Button>
+
 
             <Button type="error" size="small" @click="removes()" icon="trash-b" style="margin-right: 10px;"
                     v-if="bucket.selection.length > 0">删除({{bucket.selection.length}})
@@ -56,7 +66,8 @@
     import ClientHeader from '../components/Main/ClientHeader.vue';
     import ResourceTable from '../components/Main/ResourceTable.vue';
 
-    import {mapGetters} from 'vuex';
+    import {mapGetters, mapState} from 'vuex';
+
     import * as types from '../vuex/mutation-types';
 
     import mixin_base from "../mixins/mixin-base";
@@ -100,7 +111,15 @@
                 privatebucket: types.APP.setup_privatebucket,
                 setup_deleteNoAsk: types.APP.setup_deleteNoAsk,
                 customedomain: types.APP.setup_customedomain
-            })
+            }),
+            ...mapState({
+                copyKeys: state => state.app.copy.srcKeys,
+                copyState(state) {
+                    const canCopy = this.bucket.name !== state.app.copy.srcBucket &&
+                        state.app.copy.srcKeys.length > 0;
+                    return canCopy;
+                },
+            }),
         },
         watch: {
             bucketname: function (val, oldVal) {
@@ -307,6 +326,12 @@
             },
             downloads() {
                 EventBus.$emit(Constants.Event.download);
+            },
+            copy() {
+                EventBus.$emit(Constants.Event.copy);
+            },
+            paste() {
+                EventBus.$emit(Constants.Event.paste);
             },
             /**
              * 表单模式/图片模式

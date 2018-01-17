@@ -25,7 +25,7 @@ export default {
     state: {
         setup: {
             deleteNoAsk: false,
-            copyType: 'markdown',
+            copyType: 'url',
             bucket_name: '',
             bucket_dir: '',
             imagestyle: 'imageView2/1/w/100/h/100/format/webp/q/10',
@@ -33,6 +33,10 @@ export default {
             privatebucket: [],
             customedomain: {},
             privatedeadline: 3600//默认1小时
+        },
+        copy: {
+            srcKeys: [],
+            srcBucket: null,
         },
         app_buckets: [],
         upload: {
@@ -88,6 +92,10 @@ export default {
         },
         [types.APP.app_setup_init](state, value) {
             state.setup = value;
+        },
+        [types.APP.app_copy_set](state, { srcBucket, srcKeys }) {
+            state.copy.srcBucket = srcBucket;
+            state.copy.srcKeys = srcKeys;
         },
         [types.APP.upload_append_file](state, { key, bucket, path }) {
             if (state.upload.file[path]) return; 
@@ -277,6 +285,16 @@ export default {
                 default:
                     throw new Error('unsupport type');
             }
+        },
+        [types.APP.copy_a_paste](context, { bucket, callback }) {
+            cloudStorage.copy({
+                srcBucket: context.state.copy.srcBucket,
+                srcKeys: context.state.copy.srcKeys,
+                destBucket: bucket,
+            }, function (e, respBody, respInfo) {
+                context.commit(types.APP.app_copy_set, { srcBucket: null, srcKeys: [] });
+                callback(e, respBody);
+            });
         },
     },
     getters: {

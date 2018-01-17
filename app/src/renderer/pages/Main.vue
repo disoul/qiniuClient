@@ -60,6 +60,26 @@
         }
     }
 
+    .ivu-menu-item-group {
+        position: relative;
+    }
+
+    .append-wrapper {
+        position: absolute;
+        top: 53px;
+        left: 80px;
+        z-index: 1000;
+
+    }
+
+    .append {
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
 </style>
 <template>
     <div class="layout">
@@ -68,6 +88,13 @@
                 <i-button type="text" @click="toggleClick" class="navicon_btn">
                     <Icon type="navicon" size="32"></Icon>
                 </i-button>
+                <!--
+                <div class="append-wrapper">
+                    <Tooltip content="创建新空间">
+                        <Button v-on:click="newBucket()" v-show="menuState" class="append" type="primary" shape="circle" icon="ios-plus-empty"></Button>
+                    </Tooltip>
+                </div>
+                -->
                 <Menu ref='menu' theme="dark" width="auto" v-if="buckets && buckets.length > 0"
                       @on-select="selectBuckets"
                       :active-name="bucketname">
@@ -173,6 +200,9 @@
                 types.APP.app_a_buckets,
                 types.APP.app_a_setup_init,
             ]),
+            newBucket() {
+                console.log('newBucket');
+            },
             toggleClick() {
                 this.menuState = !this.menuState;
             },
