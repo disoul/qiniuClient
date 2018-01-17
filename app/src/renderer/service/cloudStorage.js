@@ -130,6 +130,34 @@ function copy(params, callback) {
             callback(respInfo, respBody);
         }
     });
-}   
+}
 
-export {init, httpAuthorization, getPrivateUrl, remove, upload, fetch, copy}
+function changeMime(params) {
+    return new Promise((resolve, reject) => {
+        let config = new qiniu.conf.Config();
+        let bucketManager = new qiniu.rs.BucketManager(getToken(), config);
+        bucketManager.changeMime(params.bucket, params.key, params.value, function(err, respBody, respInfo) {
+            if (err || respInfo.statusCode !== 200) {
+                reject(err, respBody);
+                return;
+            }
+            resolve(respBody);
+        });
+    });
+}
+
+function changeHeaders(params) {
+    return new Promise((resolve, reject) => {
+        let config = new qiniu.conf.Config();
+        let bucketManager = new qiniu.rs.BucketManager(getToken(), config);
+        bucketManager.changeHeaders(params.bucket, params.key, params.headers, function(err, respBody, respInfo) {
+            if (err || respInfo.statusCode !== 200) {
+                reject(err, respBody);
+                return;
+            }
+            resolve(respBody);
+        });
+    });
+}
+
+export {init, httpAuthorization, getPrivateUrl, remove, upload, fetch, copy, changeMime, changeHeaders}

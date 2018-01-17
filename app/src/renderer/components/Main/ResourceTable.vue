@@ -88,7 +88,7 @@
                                     },
                                     on: {
                                         click: () => {
-                                            this.show(item.index)
+                                            this.modify(item.index)
                                         }
                                     }
                                 }, '修改信息'),

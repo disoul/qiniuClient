@@ -51,6 +51,14 @@
         </div>
 
         <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
+            <i-button type="text" @click="actionBtn(4)" v-if="bucket.name">
+                <Tooltip content="刷新" placement="bottom">
+                    <Icon type="ios-reload" size="32"/>
+                </Tooltip>
+            </i-button>
+        </div>
+
+        <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
             <i-button type="text" @click="actionBtn(0)" v-if="bucket.name">
                 <Tooltip content="添加文件" placement="bottom">
                     <Icon type="ios-plus-outline" size="32"/>
@@ -61,7 +69,7 @@
         <div class="upload-btn" @mouseenter="toggleShow($event)" @mouseleave="toggleShow($event)">
             <i-button type="text" @click="actionBtn(3)" v-if="bucket.name">
                 <Badge v-bind:count="uploadCount" overflow-count="99">
-                    <Tooltip content="上传列表" placement="bottom">
+                    <Tooltip content="传输列表" placement="bottom">
                         <Icon type="ios-cloud-upload-outline" size="32"/>
                     </Tooltip>
                 </Badge>
@@ -231,6 +239,8 @@
                     case 3:
                         this.$store.commit(types.APP.upload_set_plane);
                         break;
+                    case 4:
+                        this.$emit('on-update');
                 }
             },
             initModal() {

@@ -17,6 +17,9 @@ export default {
     props: {
         bucket: {
             type: Object
+        },
+        showModifyModel: {
+            type: Function
         }
     },
     data() {
@@ -45,6 +48,9 @@ export default {
         },
         show(index) {
             this.$electron.shell.openExternal(this.getResoureUrl(index));
+        },
+        modify(index) {
+            this.showModifyModel(index);
         },
         copy(index) {
             util.setClipboardText(this, this.setup_copyType, this.getResoureUrl(index));

@@ -50,7 +50,7 @@
             </Button-group>
         </div>
 
-        <resource-table v-if="endable && bucket.showType === 0" :bucket="bucket" @on-update="onUpdate"></resource-table>
+        <resource-table v-if="endable && bucket.showType === 0" :bucket="bucket" @on-update="onUpdate" :showModifyModel="modify"></resource-table>
         <resource-grid v-else-if="endable && bucket.showType === 1" :bucket="bucket"
                        @on-update="onUpdate"></resource-grid>
         <Modal
@@ -59,13 +59,22 @@
                 @on-ok="doRemove">
             <p v-for="file in bucket.selection">{{file.key}}</p>
         </Modal>
+
+        <Modal
+            v-model="modifyModel"
+            title="修改文件元数据"
+            @on-ok="doModify">
+            <modify-form ref="modifyForm"></modify-form>
+        </Modal>
     </div>
 </template>
 <script>
     import DirTag from '../components/Main/DirTag.vue';
     import ClientHeader from '../components/Main/ClientHeader.vue';
     import ResourceTable from '../components/Main/ResourceTable.vue';
+    import ModifyForm from '../components/Main/ModifyForm.vue';
 
+    import { cloudStorage } from '../service';
     import {mapGetters, mapState} from 'vuex';
 
     import * as types from '../vuex/mutation-types';
@@ -78,7 +87,8 @@
         name: 'bucketPage',
         components: {
             ResourceGrid,
-            DirTag, ClientHeader, ResourceTable
+            DirTag, ClientHeader, ResourceTable,
+            ModifyForm,
         },
         mixins: [mixin_base],
         props: {
@@ -103,7 +113,8 @@
                     withoutDelimiterFiles: []
                 },
                 endable: false,
-                deleteNoAskModel: false
+                deleteNoAskModel: false,
+                modifyModel: false,
             };
         },
         computed: {
@@ -333,6 +344,10 @@
             paste() {
                 EventBus.$emit(Constants.Event.paste);
             },
+            modify(index) {
+                this.modifyModel = true;
+                this.modifyIndex = index;
+            },
             /**
              * 表单模式/图片模式
              * @param type
@@ -348,6 +363,49 @@
                     this.bucket.currentDir = keyword;
                 }
                 this.getResources(keyword);
+            },
+            doModify() {
+                const modifyData = this.$refs.modifyForm;
+                const baseParams = {
+                    bucket: this.bucket.name,
+                    key: this.bucket.files[this.modifyIndex].key,
+                };
+                const mimeType = modifyData.mimeModel.value;
+                if (mimeType) {
+                    cloudStorage.changeMime({ ...baseParams, value: mimeType }).then(resp => {
+                        this.$Message.success("修改MimeType成功");
+                        this.onUpdate();
+                    }).catch(e => {
+                        this.$Message.error("修改MimeType失败");
+                    });
+                }
+
+                const customHeaders = modifyData.customModel;
+                let headers = {};
+                for (let key in modifyData.headerModel) {
+                    const value = modifyData.headerModel[key];
+                    if (value) {
+                        headers[key] = value;
+                    }
+                }
+                customHeaders.items.forEach(item => {
+                    if (item.key) {
+                        headers[item.key] = item.value;
+                    }
+                });
+
+                if (Object.keys(headers).length > 0) {
+                    cloudStorage.changeHeaders({ ...baseParams, headers }).then(() => {
+                        this.$Message.success("修改Headers成功");
+                        this.onUpdate();
+                    }).catch(e => {
+                        this.$Message.error("修改Headers失败");
+                    })
+                }
+                this.$refs.modifyForm.resetData();
+            },
+            changeMime() {
+
             }
         }
 
