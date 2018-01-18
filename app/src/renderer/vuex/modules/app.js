@@ -238,11 +238,10 @@ export default {
                         }
                     ]);
                 } else {
-                    context.commit(types.APP.upload_set_file, {
-                        field: 'status',
-                        value: 'finish',
-                        filepath: file.path,
-                    });
+                    context.commit(types.APP.upload_set_file, [
+                        { field: 'status', value: 'finish', filepath: file.path },
+                        { field: 'percent', value: 100, filepath: file.path },
+                    ]);
                 }
                 context.dispatch(types.APP.upload_a_start_upload);
             });

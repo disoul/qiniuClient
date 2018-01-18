@@ -252,22 +252,6 @@
                 } else if (name === '__app__logout__') {
                     this.$Modal.confirm({
                         title: '登出该账号?',
-                        render: (h) => {
-                            return h('div', {
-                                style: {
-                                    'padding-top': '10px'
-                                }
-                            }, [
-                                '如果有不满意的地方,记得提个',
-                                h('a', {
-                                    on: {
-                                        click: () => {
-                                            this.openBrowser(Constants.URL.issue);
-                                        }
-                                    }
-                                }, ' issues')
-                            ])
-                        },
                         onOk: () => {
                             storage.clear(() => {
                                 this.$router.push({path: '/login'});

@@ -11,6 +11,11 @@
         align-items: center;
         padding: 15px 15px 0 15px;
     }
+
+    .layout {
+        display: flex;
+        flex-direction: column;
+    }
 </style>
 <template>
     <div class="layout">
@@ -39,20 +44,12 @@
                     v-if="bucket.selection.length > 0">删除({{bucket.selection.length}})
             </Button>
 
-            <Button-group size="small" style="background: #FFF;margin-right: 10px;display: flex;">
-                <Button :type="bucket.showType === 0 ? 'primary' : 'ghost'" @click="showType(0)"
-                        icon="navicon-round"></Button>
-                <Button :type="bucket.showType === 1 ? 'primary' : 'ghost'" @click="showType(1)" icon="images"></Button>
-            </Button-group>
-
             <Button-group size="small" style="background: #FFF" v-if="bucket.marker">
                 <Button type="ghost" @click="getResources" icon="chevron-right"></Button>
             </Button-group>
         </div>
 
         <resource-table v-if="endable && bucket.showType === 0" :bucket="bucket" @on-update="onUpdate" :showModifyModel="modify"></resource-table>
-        <resource-grid v-else-if="endable && bucket.showType === 1" :bucket="bucket"
-                       @on-update="onUpdate"></resource-grid>
         <Modal
                 v-model="deleteNoAskModel"
                 title="确认删除文件？"

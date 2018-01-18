@@ -3,6 +3,8 @@
         margin: 15px;
         //overflow: scroll;
         background: #fff;
+        flex: 1;
+        overflow: scroll;
     }
 
 </style>
@@ -21,7 +23,7 @@
 <template>
     <div class="layout-content">
         <Table ref="table" border :columns="columns" :context="self"
-               :height="tableHeight" :data="bucket.files" no-data-text="暂无数据"
+               :data="bucket.files" no-data-text="暂无数据"
                v-on:on-context-menu="onRowClick"
                @on-selection-change="onSelectionChange"></Table>
         <Modal

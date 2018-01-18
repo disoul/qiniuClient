@@ -1,5 +1,5 @@
 <template>
-    <div id="app" :style="{height:appHeight}">
+    <div id="app" style="flex: 1;overflow: hidden;">
         <router-view></router-view>
     </div>
 </template>
@@ -11,9 +11,11 @@
         store,
         computed: {
             appHeight() {
+                /*
                 if (document.getElementById('title'))
                     return (window.innerHeight - document.getElementById('title').offsetHeight) + 'px';
                 else
+                */
                     return '100%';
             }
         },
