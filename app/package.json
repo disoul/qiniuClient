@@ -1,6 +1,6 @@
 {
   "name": "qiniuClient",
-  "version": "0.0.9",
+  "version": "1.0.0",
   "description": "一个七牛云文件管理客户端",
   "main": "./dist/main.js",
   "dependencies": {
@@ -17,8 +17,7 @@
     "vuex": "^2.1.1"
   },
   "build": {
-    "productName": "qiniu client",
-    "appId": "com.github.willnewii.qiniuClient",
+    "productName": "qiniuClient",
     "compression": "maximum",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "win": {
@@ -38,7 +37,7 @@
           "path": "/Applications"
         }
       ],
-      "title": "qiniu client ${version}"
+      "title": "qiniuClient ${version}"
     },
     "mac": {
       "icon": "./icons/icon.icns"
@@ -60,6 +59,5 @@
       "output": "../release"
     }
   },
-  "devDependencies": {},
-  "author": "诗人的咸鱼 <willnewii@163.com>"
+  "devDependencies": {}
 }

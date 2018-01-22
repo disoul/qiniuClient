@@ -65,9 +65,12 @@ export function getPostfix(path) {
     }
 }
 
-export function getFilename(pathname) {
-    const path = require('path');
-    return path.basename(pathname);
+export function getFilename(file) {
+    if (file.type === 'upload') {
+        return file.path;
+    } else {
+        return file.key;
+    }
 }
 
 /**

@@ -65,7 +65,7 @@ export default {
                 const url = this.getResoureUrl(null, currentFile.key);
                 this.$store.dispatch(
                     types.APP.download_a_append_file,
-                    { url, savePath: this.setup_downloaddir, size: currentFile.fsize },
+                    { key: currentFile.key, url, savePath: this.setup_downloaddir, size: currentFile.fsize },
                 );
             }
         },

@@ -14,6 +14,21 @@
             height: 100%;
         }
 
+        .mini-mode {
+            .ivu-menu-item>i {
+                margin: 0 !important;
+            }
+            .ivu-menu-item {
+                align-items: center;
+                justify-content: center;
+                padding: 8px 6px !important;
+            }
+            .ivu-menu-item-group-title {
+                padding: 0  0 0 6px !important;
+                transform: translateX(-10px) !important;
+            }
+        }
+
         .layout-menu-left {
             background: #464c5b;
             display: flex;
@@ -33,7 +48,7 @@
             }
 
             .ivu-menu-item {
-                padding: 8px 24px;
+                padding: 8px 16px;
                 display: flex;
                 align-items: center;
                 .layout-text {
@@ -43,6 +58,16 @@
 
             .layout-hide-text {
                 display: none;
+            }
+
+            .layout-center-text {
+                height: 22px;
+                line-height: 22px;
+                width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                text-align: center;
             }
 
             .version {
@@ -84,7 +109,7 @@
 <template>
     <div class="layout">
         <Row type="flex">
-            <i-col :span="spanLeft" class="layout-menu-left">
+            <i-col :span="spanLeft" class="layout-menu-left" :class="{'mini-mode': !menuState}">
                 <i-button type="text" @click="toggleClick" class="navicon_btn">
                     <Icon type="navicon" size="32"></Icon>
                 </i-button>
@@ -100,10 +125,11 @@
                       :active-name="bucketname">
                     <Menu-group title="存储空间">
                         <Menu-item v-for="(item,index) of buckets" :key="index" :name="item">
-                            <Icon :style="{width:iconSize + 'px'}"
-                                  :type="privatebucket.indexOf(item) !==  -1 ? 'android-lock' : 'folder'"
+                            <Icon v-show="menuState"
+                                  :style="{width:iconSize + 'px'}"
+                                  :type="privatebucket.indexOf(item) !==  -1 ? 'ios-folder' : 'folder'"
                                   :size="iconSize"></Icon>
-                            <span class="layout-text" :class="{'layout-hide-text': !menuState}">{{item}}</span>
+                            <span class="layout-text" :class="{'layout-center-text': !menuState}">{{item}}</span>
                         </Menu-item>
                     </Menu-group>
                     <Menu-group title="设置">
@@ -118,11 +144,7 @@
                     </Menu-group>
                 </Menu>
                 <div class="version">
-                    <span @click="open_Browser(0)">v{{appVersion}}</span>
-                    <Poptip trigger="hover" v-if="version.url" placement="top-start" :title="version.version">
-                        <pre slot="content" class="new-version-info">{{version.info}}</pre>
-                        <span class="new-version" @click="open_Browser(1)">有新版啦~</span>
-                    </Poptip>
+                    <span>v{{appVersion}}</span>
                 </div>
             </i-col>
             <i-col :span="spanRight">
@@ -185,7 +207,7 @@
             //this.$router.push({path: '/setup'});
 
             this[types.APP.app_a_setup_init]();
-
+/*
             this.doRequsetGet(Constants.URL.releases, null, (response) => {
                 let result = response.data;
                 if (result.tag_name > pkg.version) {
@@ -194,6 +216,7 @@
                     this.version.info = result.body;
                 }
             });
+            */
         },
         methods: {
             ...mapActions([
@@ -251,7 +274,8 @@
                     this.$router.push({path: '/setup'});
                 } else if (name === '__app__logout__') {
                     this.$Modal.confirm({
-                        title: '登出该账号?',
+                        title: '登出',
+                        content: '是否确认登出该账号？',
                         onOk: () => {
                             storage.clear(() => {
                                 this.$router.push({path: '/login'});

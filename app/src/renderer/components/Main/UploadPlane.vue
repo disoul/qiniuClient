@@ -141,7 +141,7 @@ export default {
       const query = this.$store.state.app.upload.file.query;
       let fileNameMap = {};
       query.forEach(path => {
-        fileNameMap[path] = getFilename(path);
+        fileNameMap[path] = getFilename(this.$store.state.app.upload.file[path]);
       });
       return fileNameMap;
     },

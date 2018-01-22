@@ -7,7 +7,6 @@ import * as util from '../../util/util';
 import electron from 'electron';
 
 const storage = require('electron-json-storage');
-
 /*function setAppSetup(key, value) {
  storage.get('app_setup', (error, app) => {
  if (!error) {
@@ -17,7 +16,8 @@ const storage = require('electron-json-storage');
  })
  }*/
 function setAppSetup(app) {
-    storage.set('app_setup', app);
+    console.log('set', app);
+    storage.set('app_setup', app, () => {});
 }
 
 
@@ -98,7 +98,17 @@ export default {
             state.copy.srcKeys = srcKeys;
         },
         [types.APP.upload_append_file](state, { key, bucket, path }) {
-            if (state.upload.file[path]) return; 
+            if (state.upload.file[path]) {
+                const file = state.upload.file[path];
+                if (file.status !== 'finish' && file.status !== 'error') return;
+
+                const queryIndex = state.upload.file.query.indexOf(path);
+                const t = state.upload.file.query[0];
+                state.upload.file.query[0] = state.upload.file.query[queryIndex];
+                state.upload.file.query[queryIndex] = t;
+            } else {
+                state.upload.file.query.push(path);
+            } 
             state.upload.file[path] = {
                 key,
                 // idle pending pause error finish
@@ -109,13 +119,22 @@ export default {
                 path,
                 type: 'upload',
             };
-            state.upload.file.query.push(path);
         },
-        [types.APP.download_append_file](state, { url, savePath, size }) {
+        [types.APP.download_append_file](state, { key, url, savePath, size }) {
             const uniqueUrl = url.split('?')[0];
-            if (state.upload.file[uniqueUrl]) return; 
+            if (state.upload.file[uniqueUrl]) {
+                const file = state.upload.file[uniqueUrl];
+                if (file.status !== 'finish' && file.status !== 'error') return;
+                const queryIndex = state.upload.file.query.indexOf(uniqueUrl);
+                const t = state.upload.file.query[0];
+                state.upload.file.query[0] = state.upload.file.query[queryIndex];
+                state.upload.file.query[queryIndex] = t;
+            } else {
+                state.upload.file.query.push(uniqueUrl);
+            }
             state.upload.file[uniqueUrl] = {
                 url,
+                key,
                 savePath,
                 size,
                 status: 'idle',
@@ -123,7 +142,6 @@ export default {
                 speed: -1,
                 type: 'download',
             };
-            state.upload.file.query.push(uniqueUrl);
         },
         [types.APP.upload_set_file](state, payload) {
             let args = [];
@@ -267,8 +285,8 @@ export default {
             context.commit(types.APP.upload_append_file, { path, bucket, key });
             context.dispatch(types.APP.upload_a_start_upload);
         },
-        [types.APP.download_a_append_file](context, { url, savePath, size }) {
-            context.commit(types.APP.download_append_file, { url, savePath, size });
+        [types.APP.download_a_append_file](context, { key, url, savePath, size }) {
+            context.commit(types.APP.download_append_file, { key, url, savePath, size });
             context.dispatch(types.APP.download_a_start_upload);
         },
         [types.APP.upload_a_set_limit](context, { type, value }) {

@@ -95,7 +95,7 @@
             </div>
 
             <div class="modal-filekey" v-for="_path of filePaths">
-                文件名:{{uploadModal.prepend}}{{uploadModal.input ? uploadModal.input + '/' : ''}}{{_path | getfileNameByPath}}
+                文件名:{{uploadModal.prepend}}{{uploadModal.input ? uploadModal.input : ''}}{{_path | getfileNameByPath}}
             </div>
         </Modal>
     </div>
@@ -259,7 +259,7 @@
             },
             preUploadFile() {
                 if (this.uploadModal.input)
-                    this.uploadModal.input = this.uploadModal.input + '/';
+                    this.uploadModal.input = this.uploadModal.input;
 
                 this.uploadFile();
             },

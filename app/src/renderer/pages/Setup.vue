@@ -25,22 +25,6 @@
                 <Radio label="markdown"></Radio>
             </Radio-group>
         </div>
-        <div class="item">
-            默认托盘上传位置：<br>
-            <Row class="row-line">
-                <Col span="10">
-                <Select v-model="bucketname" size="small" style="width:30%" placeholder="空间名称">
-                    <Option v-for="item in buckets" :value="item" :key="item">{{ item }}</Option>
-                </Select>
-                /
-                <Input v-model="bucketdir" size="small" style="width:66%" placeholder="路径"/>
-                </Col>
-                <Col span="10" offset="1">
-                <Button @click="saveDir" type="ghost" size="small" class="save-btn">保存</Button>
-                </Col>
-            </Row>
-            <div v-if="setup_bucket_name">提示：默认文件将会被上传到 {{setup_bucket_name}}/{{setup_bucket_dir}}/ 目录下</div>
-        </div>
 
         <div class="item">
             最大上传任务数：
@@ -61,7 +45,7 @@
             下载目录：<br>
             <Row class="row-line">
                 <Col span="10">
-                <Input v-model="downloaddir" size="small" placeholder="默认下载目录" style="width: 100%;"
+                <Input v-model="downloaddir" size="small" :placeholder="downloaddir === '' ? '默认路径' : downloaddir" style="width: 100%;"
                        disabled/>
                 </Col>
                 <Col span="12" offset="1">
