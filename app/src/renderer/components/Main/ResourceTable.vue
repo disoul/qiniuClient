@@ -23,7 +23,7 @@
 <template>
     <div class="layout-content">
         <Table ref="table" border :columns="columns" :context="self"
-               :data="bucket.files" no-data-text="暂无数据"
+               :data="filterfiles" no-data-text="暂无数据"
                v-on:on-context-menu="onRowClick"
                @on-selection-change="onSelectionChange"></Table>
         <Modal
@@ -55,9 +55,14 @@
                     {
                         type: 'selection',
                         width: 50,
-                        align: 'center'
+                        align: 'center',
+                        render(h, item) {
+                            if (item.row.folder) {
+                                return '';
+                            }
+                        },
                     },
-                    {title: '文件名', key: 'key', ellipsis: false},
+                    {title: '文件名', key: 'filename', ellipsis: false},
                     {
                         title: '大小', key: 'fsize', sortable: true, width: 100,
                         render(h, item) {
@@ -75,12 +80,31 @@
                     {
                         title: '上传日期', key: 'putTime', sortable: true, sortType: 'desc', width: 150,
                         render(h, item) {
+                            if (item.row.putTime > 101556888398493720) {
+                                return '';
+                            }
                             return moment(item.row.putTime / 10000).format('YYYY-MM-DD HH:mm:ss');
                         }
                     },
                     {
                         title: '操作', key: 'action', width: 175,
                         render: (h, item) => {
+                            if (item.row.folder) {
+                                return h('div', [
+                                    h('i-button', {
+                                        class:'primary-line-btn',
+                                        props: {
+                                            type: 'primary',
+                                            size: 'small'
+                                        },
+                                        on: {
+                                            click: () => {
+                                                this.changeDir(item.row.currentDir);
+                                            }
+                                        }
+                                    }, '进入文件夹'),
+                                ]);
+                            }
                             return h('div', [
                                 h('i-button', {
                                     class:'primary-line-btn',
@@ -141,7 +165,18 @@
         },
         methods: {
             onSelectionChange(selection) {
-                this.bucket.selection = selection;
+                console.log(selection);
+                let selectionFiles = [];
+                for (let i = 0; i < selection.length; i += 1) {
+                    const item = selection[i];
+                    if (item.folder) {
+                        selectionFiles = selectionFiles.concat(item.children);
+                    } else {
+                        selectionFiles.push(item);
+                    }
+                }
+                this.bucket.selection = selectionFiles;
+                console.log(this.bucket.selection);
             },
             onRowClick(e) {
                 console.log('click', e);

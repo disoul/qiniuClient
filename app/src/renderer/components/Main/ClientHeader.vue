@@ -240,7 +240,7 @@
                         this.$store.commit(types.APP.upload_set_plane);
                         break;
                     case 4:
-                        this.$emit('on-update');
+                        this.$emit('on-update', { refresh: true });
                 }
             },
             initModal() {

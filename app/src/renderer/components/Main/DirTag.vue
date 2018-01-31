@@ -12,8 +12,16 @@
 </style>
 <template>
     <div class="layout-tag">
+        <!--
         <Tag type="border" v-for="item of bucket.dirs" :key="item" :class="bucket.currentDir == item ? 'blue-tag' : ''">
             <p v-on:click="doSearch(item)">{{item == '' ? '全部' : item == '__withoutDelimiter__' ? '其他' : item}}</p>
+        </Tag>
+        -->
+        <Tag type="border" :class="bucket.currentDir == item ? 'blue-tag' : ''">
+            <p v-on:click="doSearch('')">主目录</p>
+        </Tag>
+        <Tag type="border" :class="bucket.currentDir == item ? 'blue-tag' : ''">
+            <p v-on:click="doSearch('..')">上一级</p>
         </Tag>
     </div>
 </template>
@@ -27,6 +35,7 @@
         },
         methods: {
             doSearch(tag, event) {
+                console.log(tag);
                 this.$emit('on-click', tag, event);
             }
         }

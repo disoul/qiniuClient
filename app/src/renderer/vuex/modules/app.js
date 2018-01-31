@@ -47,6 +47,10 @@ export default {
             downloadLimit: 4,
             showPlane: false,
         },
+        fs: {
+            perfix: '',
+            delimiter: '/',
+        },
     },
     mutations: {
         [types.APP.setup_s_privatebucket](state, value) {

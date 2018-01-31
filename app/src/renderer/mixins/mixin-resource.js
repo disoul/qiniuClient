@@ -20,6 +20,12 @@ export default {
         },
         showModifyModel: {
             type: Function
+        },
+        filterfiles: {
+            type: Array,
+        },
+        changeDir: {
+            type: Function
         }
     },
     data() {
@@ -36,7 +42,7 @@ export default {
             if (key) {
                 fileName = key;
             } else {
-                fileName = this.bucket.files[index].key;
+                fileName = this.bucket.filterFiles[index].key;
             }
             let url;
             if (this.bucket.isprivate) {

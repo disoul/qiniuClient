@@ -49,7 +49,7 @@
             </Button-group>
         </div>
 
-        <resource-table v-if="endable && bucket.showType === 0" :bucket="bucket" @on-update="onUpdate" :showModifyModel="modify"></resource-table>
+        <resource-table v-if="endable && bucket.showType === 0" :bucket="bucket" :changeDir="updateCurrentDir" :filterfiles="bucket.filterFiles" @on-update="onUpdate" :showModifyModel="modify"></resource-table>
         <Modal
                 v-model="deleteNoAskModel"
                 title="确认删除文件？"
@@ -105,8 +105,10 @@
                     isprivate: false,
                     marker: '',
                     files: [],
+                    filterFiles: [],
                     showType: 0,
                     selection: [],
+                    markerPrefix: '',
                     withoutDelimiterFiles: []
                 },
                 endable: false,
@@ -268,36 +270,42 @@
                     }
                 });
             },
-            getResources(keyword) {
+            getResources(keyword, nofilter, callback) {
                 this.bucket.selection = [];
 
                 let data = {
                     bucket: this.bucket.name,
-                    limit: 30
+                    limit: 30,
+                    prefix: '',
                 };
 
                 if (keyword) {
-                    data.prefix = keyword;
+                    data.prefix = this.bucket.currentDir;
                 }
 
                 if (this.bucket.marker) {
-                    data.marker = this.bucket.marker;
+                    if (data.prefix === this.bucket.markerPrefix) {
+                        data.marker = this.bucket.marker;
+                    }
                 }
 
                 this.doRequset(Constants.method.getResources, data, (response) => {
                     if (!response)
                         return;
 
-                    if (this.bucket.marker) {
+                    if (this.bucket.marker && this.bucket.markerPrefix === data.prefix) {
                         this.bucket.files = this.bucket.files.concat(response.data.items);
                     } else {
                         this.bucket.files = response.data.items;
                     }
+                    this.bucket.markerPrefix = data.prefix;
                     if (response.data.marker) {
                         this.bucket.marker = response.data.marker;
                     } else {
                         this.bucket.marker = '';
                     }
+                    !nofilter && this.filterFiles(true);
+                    callback && callback();
                 });
             },
             /**
@@ -313,14 +321,70 @@
              * @param search
              */
             doDirSearch: function (search) {
+
+                console.log(search, 'search');
+                if (search === '..') {
+                    const dirs = this.bucket.currentDir.split('/');
+                    console.log(dirs);
+                    if (dirs.length === 1) return;
+                    this.bucket.currentDir = dirs.splice(0, dirs.length - 2).join('/') + '/';
+                    if (this.bucket.currentDir === '/') this.bucket.currentDir = '';
+                    console.log(this.bucket.currentDir);
+                    this.filterFiles();
+                    return;
+                }
+
                 this.bucket.currentDir = search;
                 this.bucket.marker = '';
 
                 if (search === '__withoutDelimiter__') {
                     this.bucket.files = this.bucket.withoutDelimiterFiles;
+                    this.filterFiles();
                 } else {
                     this.doSearch(this.bucket.currentDir);
                 }
+            },
+            filterFiles(noget) {
+                const currentDir = this.bucket.currentDir;
+                const op = () => {
+                    let filterFiles = [];
+                    let folders = {};
+                    for (let i = 0; i < this.bucket.files.length; i += 1) {
+                        const file = this.bucket.files[i];
+                        const filename = file.key;
+                        if (filename.startsWith(currentDir)) {
+                            const filenameWithoutPrefix = filename.slice(currentDir.length, filename.length);
+                            const filepath = filenameWithoutPrefix.split('/');
+                            if (filepath.length === 1) {
+                                filterFiles.push({
+                                    ...file,
+                                    filename: filepath[0],
+                                });
+                            } else {
+                                if (folders[filepath[0]]) {
+                                    folders[filepath[0]].children.push(file);
+                                } else {
+                                    folders[filepath[0]] = {
+                                        ...file,
+                                        putTime: file.putTime * 10,
+                                        key: filepath[0], 
+                                        children: [file],
+                                        filename: filepath[0],
+                                        currentDir: currentDir + filepath[0] + '/',
+                                        fsize: 0,
+                                        mimeType: '文件夹',
+                                        folder: true,
+                                    };
+                                }
+                            }
+                        }
+                    }
+
+                    filterFiles = Object.keys(folders).map(folder => folders[folder]).concat(filterFiles);
+                    this.bucket.filterFiles = filterFiles;
+                    console.log(filterFiles);
+                };
+                noget ? op() : this.getResources(currentDir, true, op);
             },
             removes() {
                 if (this.setup_deleteNoAsk) {
@@ -361,11 +425,15 @@
                 }
                 this.getResources(keyword);
             },
+            updateCurrentDir(dir) {
+                this.bucket.currentDir = dir;
+                this.filterFiles();
+            },
             doModify() {
                 const modifyData = this.$refs.modifyForm;
                 const baseParams = {
                     bucket: this.bucket.name,
-                    key: this.bucket.files[this.modifyIndex].key,
+                    key: this.bucket.filterFile[this.modifyIndex].key,
                 };
                 const mimeType = modifyData.mimeModel.value;
                 if (mimeType) {
