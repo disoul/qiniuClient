@@ -7,6 +7,7 @@
         overflow: scroll;
     }
 
+
 </style>
 <style lang="scss" >
     .primary-line-btn {
@@ -19,12 +20,20 @@
         color: #333333;
         border-color: rgba(255, 66, 20, 0.45);*/
     }
+
+    .foldericon {
+        margin-right: 8px;
+        font-size: 20px;
+        color: #6ca5e2;
+    }
+
 </style>
 <template>
     <div class="layout-content">
         <Table ref="table" border :columns="columns" :context="self"
                :data="filterfiles" no-data-text="暂无数据"
                v-on:on-context-menu="onRowClick"
+               :row-class-name="rowClassName"
                @on-selection-change="onSelectionChange"></Table>
         <Modal
                 v-model="deleteNoAskModel"
@@ -62,7 +71,16 @@
                             }
                         },
                     },
-                    {title: '文件名', key: 'filename', ellipsis: false},
+                    {
+                        title: '文件名', ellipsis: false,
+                        render(h, item) {
+                            if (item.row.folder) {
+                                return h('div', [h('Icon', { class:'foldericon', props: {type: 'folder'} }), h('span', item.row.filename)])
+                            } else {
+                                return item.row.filename;
+                            }
+                        }
+                    },
                     {
                         title: '大小', key: 'fsize', sortable: true, width: 100,
                         render(h, item) {
@@ -190,6 +208,12 @@
 
                     this.tableHeight = layout.clientHeight - layout.children[0].clientHeight - layout.children[1].clientHeight - parseInt(style.marginTop) - parseInt(style.marginBottom);
                 }
+            },
+            rowClassName(row, index) {
+                if (row.folder) {
+                    return 'folder';
+                }
+                return '';
             },
         }
     };

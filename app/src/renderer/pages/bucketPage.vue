@@ -275,12 +275,12 @@
 
                 let data = {
                     bucket: this.bucket.name,
-                    limit: 30,
-                    prefix: '',
+                    limit: 1000,
+                    prefix: this.bucket.currentDir,
                 };
 
                 if (keyword) {
-                    data.prefix = this.bucket.currentDir;
+                    data.prefix = keyword;
                 }
 
                 if (this.bucket.marker) {
@@ -314,6 +314,7 @@
              */
             doSearch: function (dir, search) {
                 this.bucket.marker = '';
+                console.log('dir', dir, 'search', search);
                 this.getResources(search ? dir + search : dir);
             },
             /**
