@@ -139,7 +139,6 @@
             }
         },
         created() {
-            console.log('ipc on');
             this.$electron.ipcRenderer.removeAllListeners('updateDownloadProgress');
             this.$electron.ipcRenderer.on('updateDownloadProgress', (event, num, url, error) => {
                 if (error) {
@@ -177,7 +176,6 @@
                 }
 
                 if (num === 1) {
-                    console.log('finish', url);
                     this.$store.commit(
                         types.APP.download_set_file,
                         { field: 'status', value: 'finish', filepath: url },
@@ -314,7 +312,6 @@
              */
             doSearch: function (dir, search) {
                 this.bucket.marker = '';
-                console.log('dir', dir, 'search', search);
                 this.getResources(search ? dir + search : dir);
             },
             /**
@@ -323,14 +320,11 @@
              */
             doDirSearch: function (search) {
 
-                console.log(search, 'search');
                 if (search === '..') {
                     const dirs = this.bucket.currentDir.split('/');
-                    console.log(dirs);
                     if (dirs.length === 1) return;
                     this.bucket.currentDir = dirs.splice(0, dirs.length - 2).join('/') + '/';
                     if (this.bucket.currentDir === '/') this.bucket.currentDir = '';
-                    console.log(this.bucket.currentDir);
                     this.filterFiles();
                     return;
                 }

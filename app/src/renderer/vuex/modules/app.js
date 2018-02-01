@@ -16,7 +16,6 @@ const storage = require('electron-json-storage');
  })
  }*/
 function setAppSetup(app) {
-    console.log('set', app);
     storage.set('app_setup', app, () => {});
 }
 

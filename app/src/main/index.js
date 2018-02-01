@@ -81,11 +81,9 @@ const registerIPC = function () {
             event.sender.send('updateDownloadProgress', num, item.getURL().split('?')[0], null);
         };
 
-        console.log('downloadFIle', option);
         download(BrowserWindow.getFocusedWindow(), file, option)
             .then(dl => {
                 if (dl.getURL() !== file) return;
-                console.log('getSavePath:' + dl.getSavePath());
                 event.sender.send('updateDownloadProgress', 1, file.split('?')[0], null);
             })
             .catch(error => {

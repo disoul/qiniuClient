@@ -76,7 +76,6 @@ export default {
       })
     },
     resetData() {
-      console.log('ready to resetData');
       const defaultData = initData();
       this.mimeModel = defaultData.mimeModel;
       this.headerModel = defaultData.headerModel;

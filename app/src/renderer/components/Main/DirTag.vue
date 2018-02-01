@@ -35,7 +35,6 @@
         },
         methods: {
             doSearch(tag, event) {
-                console.log(tag);
                 this.$emit('on-click', tag, event);
             }
         }

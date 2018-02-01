@@ -103,7 +103,6 @@ function remove(params, callback) {
     let bucketManager = new qiniu.rs.BucketManager(getToken(), config);
 
     bucketManager.delete(params.bucket, params.key, function (err, respBody, respInfo) {
-        console.log(respBody, respInfo);
         if (!err) {
             callback(respBody);
         } else {

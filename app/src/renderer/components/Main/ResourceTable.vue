@@ -183,7 +183,6 @@
         },
         methods: {
             onSelectionChange(selection) {
-                console.log(selection);
                 let selectionFiles = [];
                 for (let i = 0; i < selection.length; i += 1) {
                     const item = selection[i];
@@ -194,10 +193,8 @@
                     }
                 }
                 this.bucket.selection = selectionFiles;
-                console.log(this.bucket.selection);
             },
             onRowClick(e) {
-                console.log('click', e);
             },
             setTableSize() {
                 if (this.$parent) {
